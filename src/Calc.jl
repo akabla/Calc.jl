@@ -330,7 +330,7 @@ function initiate_calc_repl(repl)
             return s
         end
         n = try
-            parse(st[2:end])
+            Meta.parse(st[2:end])
         catch
             ""
         end
