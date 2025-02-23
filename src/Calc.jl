@@ -18,6 +18,8 @@ Base.similar(s::CalcStack) = CalcStack()
 Base.push!(s::CalcStack, x) = push!(s.x, x)
 Base.splice!(s::CalcStack, i) = splice!(s.x, i)
 Base.copy(s::CalcStack) = CalcStack(copy(s.x))
+Base.resize!(s::CalcStack,n) = CalcStack(resize!(s.x,n))
+
 function Base.show(io::IO, s::CalcStack)
     println(io)
     println(io, "Stack [$(state.usedegrees ? "deg" : "rad")|$(state.usepolar ? "polr" : "rect")]")
