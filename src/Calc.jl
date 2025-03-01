@@ -21,6 +21,7 @@ Base.copy(s::CalcStack) = CalcStack(copy(s.x))
 Base.resize!(s::CalcStack,n) = CalcStack(resize!(s.x,n))
 
 function Base.show(io::IO, s::CalcStack)
+    print("\033c")
     println(io)
     println(io, "Stack [$(state.usedegrees ? "deg" : "rad")|$(state.usepolar ? "polr" : "rect")]")
     n = length(s)
@@ -124,6 +125,24 @@ function calcfun(fun, n = 0, splatoutput = false)
             end
         else       # Negative: pass and return the whole stack
             stack.x = fun(stack.x)
+        end
+        advance(stack)
+        show(terminal(s), activestack())
+        :done
+    end
+end
+
+# duplicates the last element in the stack if repl line is empty
+function enterkey()
+    (s, args...) -> begin
+        println(terminal(s))
+        stack = copy(activestack())
+        b = LineEdit.buffer(s)
+        newval = Base.eval(Main, Base.parse_input_line(String(take!(b))))
+        if newval != nothing
+            push!(stack, newval)
+        else
+            push!(stack, stack[end])
         end
         advance(stack)
         show(terminal(s), activestack())
@@ -286,8 +305,8 @@ function initiate_calc_repl(repl)
         "\t" => calcfun((y, x) -> Any[x, y], 2, true),
         # space / Enter for stack entry
         " " => calcfun(x -> x, -1),
-        "\r" => LineEdit.KeyAlias(" "),
-        "\n" => LineEdit.KeyAlias(" "),
+        "\r" => enterkey(),
+        "\n" => enterkey(),
         # undo
         "U" => (s, o...) -> begin
                     if state.position > 1
